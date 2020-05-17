@@ -27,12 +27,12 @@ u32count = []
 u16count = []
 
 [dependencies]
-clap = "2.24"
+clap = "2.33"
 
-dynasmrt = { version = "0.2.1", optional = true }
-dynasm = { version = "0.2.1", optional = true }
+dynasmrt = { version = "0.6", optional = true }
+dynasm = { version = "0.6", optional = true }
 
-llvm-sys = { version = "38", optional = true }
+llvm-sys = { version = "100", optional = true }
 
 [package.metadata.docs.rs]
 features = ["jit"]
