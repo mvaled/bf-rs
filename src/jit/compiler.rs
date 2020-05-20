@@ -1,3 +1,4 @@
+use dynasm::dynasm;
 use dynasmrt::x64::Assembler;
 use dynasmrt::{DynasmApi, DynasmLabelApi};
 

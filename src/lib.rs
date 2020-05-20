@@ -42,24 +42,26 @@
 //! all representations of Brainfuck programs implement the
 //! [`Interpretable`](traits/trait.Interpretable.html) trait.
 
-#![cfg_attr(feature = "jit", feature(plugin))]
-#![cfg_attr(feature = "jit", plugin(dynasm))]
+#![cfg_attr(feature = "jit", feature(plugin), feature(proc_macro_hygiene))]
 
 #[cfg(feature = "jit")]
 extern crate dynasmrt;
+
+#[cfg(feature = "jit")]
+extern crate dynasm;
 
 #[cfg(feature = "llvm")]
 extern crate llvm_sys;
 
 pub mod common;
+pub mod rts;
 pub mod state;
 pub mod traits;
-pub mod rts;
 
 pub mod ast;
-pub mod rle;
 pub mod bytecode;
 pub mod peephole;
+pub mod rle;
 
 #[cfg(feature = "jit")]
 pub mod jit;
