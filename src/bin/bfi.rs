@@ -30,21 +30,21 @@ extern crate bf;
 #[macro_use]
 extern crate clap;
 
-use std::io::Read;
 use std::fs::File;
+use std::io::Read;
 use std::process::exit;
 
-use clap::{Arg, App};
+use clap::{App, Arg};
 
 use bf::ast;
 use bf::traits::*;
 
 #[derive(Debug, Clone)]
 struct Options {
-    program_text:  Vec<u8>,
-    memory_size:   Option<usize>,
+    program_text: Vec<u8>,
+    memory_size: Option<usize>,
     compiler_pass: Pass,
-    unchecked:     bool,
+    unchecked: bool,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -92,7 +92,8 @@ fn main() {
 
         #[cfg(feature = "llvm")]
         Pass::Llvm => {
-            program.llvm_run(options.memory_size)
+            program
+                .llvm_run(options.memory_size)
                 .unwrap_or_else(|e| error_exit(3, &format!("runtime error: {}.", e)));
         }
     }
@@ -104,7 +105,8 @@ fn parse(options: &Options) -> Box<ast::Program> {
 }
 
 fn interpret<P: Interpretable + ?Sized>(program: &P, options: &Options) {
-    program.interpret_stdin(options.memory_size)
+    program
+        .interpret_stdin(options.memory_size)
         .unwrap_or_else(|e| error_exit(3, &format!("runtime error: {}.", e)))
 }
 
@@ -116,18 +118,18 @@ const DEFAULT_PASS: Pass = Pass::Peephole;
 
 fn get_options() -> Options {
     let mut result = Options {
-        program_text:  Vec::new(),
-        memory_size:   None,
+        program_text: Vec::new(),
+        memory_size: None,
         compiler_pass: DEFAULT_PASS,
-        unchecked:     false,
+        unchecked: false,
     };
 
     let matches = build_clap_app().get_matches();
 
     if let Some(size) = matches.value_of("size") {
-        let size = size.parse()
-            .unwrap_or_else(|e|
-                error_exit(1, &format!("error: could not parse memory size: {}.", e)));
+        let size = size.parse().unwrap_or_else(|e| {
+            error_exit(1, &format!("error: could not parse memory size: {}.", e))
+        });
         if size == 0 {
             error_exit(1, "error: memory size must be at least 1.");
         }
@@ -160,8 +162,8 @@ fn get_options() -> Options {
         }
     } else if let Some(files) = matches.values_of("FILE") {
         for f in files {
-            let mut file = File::open(f)
-                .unwrap_or_else(|e| error_exit(1, &format!("{}: ‘{}’.", e, f)));
+            let mut file =
+                File::open(f).unwrap_or_else(|e| error_exit(1, &format!("{}: ‘{}’.", e, f)));
             file.read_to_end(&mut result.program_text)
                 .unwrap_or_else(|e| error_exit(1, &format!("{}: ‘{}’.", e, f)));
         }
@@ -177,68 +179,84 @@ fn build_clap_app() -> App<'static, 'static> {
         .version(crate_version!())
         .author("Jesse A. Tov <jesse.tov@gmail.com>")
         .about("A Brainfuck interpreter")
-        .arg(Arg::with_name("expr")
-            .short("e")
-            .long("expr")
-            .value_name("CODE")
-            .help("BF code to execute")
-            .multiple(true)
-            .takes_value(true)
-            .conflicts_with("FILE"))
-        .arg(Arg::with_name("FILE")
-            .help("The source file(s) to interpret")
-            .multiple(true)
-            .conflicts_with("expr")
-            .index(1))
-        .arg(Arg::with_name("size")
-            .short("s")
-            .long("size")
-            .value_name("SIZE")
-            .help("Memory size in bytes (default 30,000)")
-            .takes_value(true))
-        .arg(Arg::with_name("ast")
-            .long("ast")
-            .help("Interpret the unoptimized AST")
-            .conflicts_with_all(&["rle", "peep", "byte", "jit", "llvm"]))
-        .arg(Arg::with_name("rle")
-            .long("rle")
-            .help("Interpret the run-length encoded the AST")
-            .conflicts_with_all(&["ast", "peep", "byte", "jit", "llvm"]))
-        .arg(Arg::with_name("peep")
-            .long("peep")
-            .help(
-                if cfg!(feature = "jit") {
+        .arg(
+            Arg::with_name("expr")
+                .short("e")
+                .long("expr")
+                .value_name("CODE")
+                .help("BF code to execute")
+                .multiple(true)
+                .takes_value(true)
+                .conflicts_with("FILE"),
+        )
+        .arg(
+            Arg::with_name("FILE")
+                .help("The source file(s) to interpret")
+                .multiple(true)
+                .conflicts_with("expr")
+                .index(1),
+        )
+        .arg(
+            Arg::with_name("size")
+                .short("s")
+                .long("size")
+                .value_name("SIZE")
+                .help("Memory size in bytes (default 30,000)")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("ast")
+                .long("ast")
+                .help("Interpret the unoptimized AST")
+                .conflicts_with_all(&["rle", "peep", "byte", "jit", "llvm"]),
+        )
+        .arg(
+            Arg::with_name("rle")
+                .long("rle")
+                .help("Interpret the run-length encoded the AST")
+                .conflicts_with_all(&["ast", "peep", "byte", "jit", "llvm"]),
+        )
+        .arg(
+            Arg::with_name("peep")
+                .long("peep")
+                .help(if cfg!(feature = "jit") {
                     "Interpret the peephole-optimized AST"
                 } else {
                     "Interpret the peephole-optimized AST (default)"
                 })
-            .conflicts_with_all(&["ast", "rle", "byte", "jit", "llvm"]))
-        .arg(Arg::with_name("byte")
-            .long("byte")
-            .help("Compile AST to bytecode")
-            .conflicts_with_all(&["ast", "rle", "peep", "jit", "llvm"]));
+                .conflicts_with_all(&["ast", "rle", "byte", "jit", "llvm"]),
+        )
+        .arg(
+            Arg::with_name("byte")
+                .long("byte")
+                .help("Compile AST to bytecode")
+                .conflicts_with_all(&["ast", "rle", "peep", "jit", "llvm"]),
+        );
 
     #[cfg(feature = "llvm")]
-    let app = app
-        .arg(Arg::with_name("llvm")
+    let app = app.arg(
+        Arg::with_name("llvm")
             .long("llvm")
             .help("JIT using LLVM")
-            .conflicts_with_all(&["ast", "rle", "peep", "byte", "jit"]));
+            .conflicts_with_all(&["ast", "rle", "peep", "byte", "jit"]),
+    );
 
     #[cfg(feature = "jit")]
-    let app = app
-        .arg(Arg::with_name("jit")
+    let app = app.arg(
+        Arg::with_name("jit")
             .long("jit")
             .help("JIT to native x64 (default)")
-            .conflicts_with_all(&["ast", "rle", "peep", "byte", "llvm"]));
+            .conflicts_with_all(&["ast", "rle", "peep", "byte", "llvm"]),
+    );
 
     #[cfg(any(feature = "jit"))]
-    let app = app
-        .arg(Arg::with_name("unchecked")
+    let app = app.arg(
+        Arg::with_name("unchecked")
             .short("u")
             .long("unchecked")
             .help("Omit memory bounds checks in JIT")
-            .conflicts_with_all(&["ast", "rle", "peep", "byte", "llvm"]));
+            .conflicts_with_all(&["ast", "rle", "peep", "byte", "llvm"]),
+    );
 
     app
 }
@@ -247,4 +265,3 @@ fn error_exit(code: i32, msg: &str) -> ! {
     eprintln!("bfi: {}", msg);
     exit(code)
 }
-

@@ -2,8 +2,8 @@ use dynasm::dynasm;
 use dynasmrt::x64::Assembler;
 use dynasmrt::{DynasmApi, DynasmLabelApi};
 
+use super::analysis::{AbstractInterpreter, BoundsAnalysis, NoAnalysis};
 use super::*;
-use super::analysis::{BoundsAnalysis, AbstractInterpreter, NoAnalysis};
 use common::Count;
 use peephole;
 use rts;
@@ -12,7 +12,8 @@ use rts;
 pub trait JitCompilable {
     /// Compile the given program into the peephole AST to prepare for JIT compilation.
     fn with_peephole<F, R>(&self, k: F) -> R
-        where F: FnOnce(&peephole::Program) -> R;
+    where
+        F: FnOnce(&peephole::Program) -> R;
 
     /// JIT compile the given program.
     fn jit_compile(&self, checked: bool) -> Program {
@@ -122,8 +123,8 @@ impl<B: BoundsAnalysis> Compiler<B> {
     }
 
     fn compile_statement(&mut self, stm: &peephole::Statement) {
-        use peephole::Statement::*;
         use common::Instruction::*;
+        use peephole::Statement::*;
 
         match *stm {
             Instr(Right(count)) => {
@@ -165,11 +166,9 @@ impl<B: BoundsAnalysis> Compiler<B> {
                 );
             }
 
-            Instr(SetZero) => {
-                dynasm!(self.asm
-                    ; mov BYTE [pointer], 0
-                )
-            }
+            Instr(SetZero) => dynasm!(self.asm
+                ; mov BYTE [pointer], 0
+            ),
 
             Instr(FindZeroRight(skip)) => {
                 self.interpreter.reset_right();
@@ -228,12 +227,11 @@ impl<B: BoundsAnalysis> Compiler<B> {
                 );
             }
 
-            Instr(JumpZero(_)) | Instr(JumpNotZero(_)) =>
-                panic!("unexpected jump instruction"),
+            Instr(JumpZero(_)) | Instr(JumpNotZero(_)) => panic!("unexpected jump instruction"),
 
             Loop(ref body) => {
                 let begin_label = self.asm.new_dynamic_label();
-                let end_label   = self.asm.new_dynamic_label();
+                let end_label = self.asm.new_dynamic_label();
 
                 self.interpreter.enter_loop(body);
 
@@ -305,7 +303,8 @@ impl<B: BoundsAnalysis> Compiler<B> {
 
 impl JitCompilable for peephole::Program {
     fn with_peephole<F, R>(&self, k: F) -> R
-        where F: FnOnce(&peephole::Program) -> R
+    where
+        F: FnOnce(&peephole::Program) -> R,
     {
         k(self)
     }
@@ -313,7 +312,8 @@ impl JitCompilable for peephole::Program {
 
 impl<T: peephole::PeepholeCompilable + ?Sized> JitCompilable for T {
     fn with_peephole<F, R>(&self, k: F) -> R
-        where F: FnOnce(&peephole::Program) -> R
+    where
+        F: FnOnce(&peephole::Program) -> R,
     {
         k(&self.peephole_compile())
     }

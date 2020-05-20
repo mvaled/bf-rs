@@ -1,22 +1,30 @@
 use std::io::{Read, Write};
 
-use state::State;
-use common::BfResult;
-use traits::Interpretable;
 use super::*;
+use common::BfResult;
+use state::State;
+use traits::Interpretable;
 
 impl Interpretable for Program {
     fn interpret_state<R: Read, W: Write>(
-        &self, mut state: State, mut input: R, mut output: W) -> BfResult<()>
-    {
+        &self,
+        mut state: State,
+        mut input: R,
+        mut output: W,
+    ) -> BfResult<()> {
         interpret(self, &mut state, &mut input, &mut output)
     }
 }
 
-fn interpret<R, W>(instructions: &Program, state: &mut State,
-                   input: &mut R, output: &mut W)
-                       -> BfResult<()>
-    where R: Read, W: Write
+fn interpret<R, W>(
+    instructions: &Program,
+    state: &mut State,
+    input: &mut R,
+    output: &mut W,
+) -> BfResult<()>
+where
+    R: Read,
+    W: Write,
 {
     use common::Instruction::*;
 

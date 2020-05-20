@@ -257,7 +257,11 @@ mod tests {
 
     fn make(memory: &[u8], pointer: usize) -> State {
         State {
-            memory: memory.iter().map(|&b| Wrapping(b)).collect::<Vec<_>>().into_boxed_slice(),
+            memory: memory
+                .iter()
+                .map(|&b| Wrapping(b))
+                .collect::<Vec<_>>()
+                .into_boxed_slice(),
             pointer: pointer,
         }
     }

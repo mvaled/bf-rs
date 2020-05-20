@@ -12,8 +12,8 @@
 
 use common;
 
-mod interpreter;
 mod compiler;
+mod interpreter;
 
 pub use self::compiler::{compile, PeepholeCompilable};
 

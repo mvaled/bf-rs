@@ -1,22 +1,30 @@
 use std::io::{Read, Write};
 
-use state::State;
-use common::BfResult;
-use traits::Interpretable;
 use super::*;
+use common::BfResult;
+use state::State;
+use traits::Interpretable;
 
 impl Interpretable for Program {
     fn interpret_state<R: Read, W: Write>(
-        &self, mut state: State, mut input: R, mut output: W) -> BfResult<()>
-    {
+        &self,
+        mut state: State,
+        mut input: R,
+        mut output: W,
+    ) -> BfResult<()> {
         interpret(self, &mut state, &mut input, &mut output)
     }
 }
 
-fn interpret<R, W>(instructions: &[Statement], state: &mut State,
-                   input: &mut R, output: &mut W)
-                   -> BfResult<()>
-    where R: Read, W: Write
+fn interpret<R, W>(
+    instructions: &[Statement],
+    state: &mut State,
+    input: &mut R,
+    output: &mut W,
+) -> BfResult<()>
+where
+    R: Read,
+    W: Write,
 {
     for instruction in instructions {
         interpret_instruction(instruction, state, input, output)?;
@@ -25,10 +33,15 @@ fn interpret<R, W>(instructions: &[Statement], state: &mut State,
     Ok(())
 }
 
-fn interpret_instruction<R, W>(instructions: &Statement, state: &mut State,
-                               input: &mut R, output: &mut W)
-                               -> BfResult<()>
-    where R: Read, W: Write
+fn interpret_instruction<R, W>(
+    instructions: &Statement,
+    state: &mut State,
+    input: &mut R,
+    output: &mut W,
+) -> BfResult<()>
+where
+    R: Read,
+    W: Write,
 {
     use super::Statement::*;
     use common::Instruction::*;
@@ -74,8 +87,7 @@ fn interpret_instruction<R, W>(instructions: &Statement, state: &mut State,
             }
         }
 
-        Instr(JumpZero(_)) | Instr(JumpNotZero(_)) =>
-            panic!("unexpected jump instruction"),
+        Instr(JumpZero(_)) | Instr(JumpNotZero(_)) => panic!("unexpected jump instruction"),
 
         Loop(ref body) => {
             while state.load() != 0 {
