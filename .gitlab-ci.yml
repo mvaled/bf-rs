@@ -1,0 +1,31 @@
+stages:
+  - test
+
+
+check rust format:
+  image: rust:1.43
+  stage: test
+  script:
+    - rm -f rust-toolchain
+    - rustup component add rustfmt
+    - CARGO_HOME=$PWD cargo fmt --all -- --check
+  only:
+    - master
+    - merge_request
+  cache:
+    paths:
+      - .cargo
+
+run all rust tests:
+  image: rustlang/rust:nightly
+  stage: test
+  script:
+    - apt update
+    - apt install -y --no-install-recommends llvm-7 llvm-7-dev
+    - CARGO_HOME=$PWD cargo test --all --features="llvm jit"
+  only:
+    - master
+    - merge_request
+  cache:
+    paths:
+      - .cargo
