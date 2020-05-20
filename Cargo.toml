@@ -36,7 +36,7 @@ clap = { version = "2.33", optional = true }
 dynasmrt = { version = "0.6", optional = true }
 dynasm = { version = "0.6", optional = true }
 
-llvm-sys = { version = "100", optional = true }
+llvm-sys = { version = "70", optional = true }
 
 [package.metadata.docs.rs]
 features = ["jit"]
